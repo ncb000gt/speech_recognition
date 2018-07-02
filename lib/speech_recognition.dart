@@ -8,86 +8,102 @@ typedef void StringResultHandler(String text);
 
 /// the channel to control the speech recognition
 class SpeechRecognition {
-  static const MethodChannel _channel =
-      const MethodChannel('speech_recognition');
+	static const MethodChannel _channel = const MethodChannel('speech_recognition');
+	bool _canRecord = false;
 
-  static final SpeechRecognition _speech = new SpeechRecognition._internal();
+	static final SpeechRecognition _speech = new SpeechRecognition._internal();
 
-  factory SpeechRecognition() => _speech;
+	factory SpeechRecognition() => _speech;
 
-  SpeechRecognition._internal() {
-    _channel.setMethodCallHandler(_platformCallHandler);
-  }
+	SpeechRecognition._internal() {
+		_channel.setMethodCallHandler(_platformCallHandler);
+	}
 
-  AvailabilityHandler availabilityHandler;
+	AvailabilityHandler availabilityHandler;
 
-  StringResultHandler currentLocaleHandler;
-  StringResultHandler recognitionResultHandler;
+	StringResultHandler currentLocaleHandler;
+	StringResultHandler recognitionResultHandler;
 
-  VoidCallback recognitionError;
+	VoidCallback recognitionError;
 
-  VoidCallback recognitionStartedHandler;
+	VoidCallback recognitionStartedHandler;
 
-  StringResultHandler recognitionCompleteHandler;
+	StringResultHandler recognitionCompleteHandler;
 
-  /// ask for speech  recognizer permission
-  Future activate() => _channel.invokeMethod("speech.activate");
+	/// ask for speech recognizer permission
+	Future activate() => _channel.invokeMethod("speech.activate");
 
-  /// start listening
-  Future listen({String locale = "en_US"}) {
-    assert(locale != null);
-    _channel.invokeMethod("speech.listen", locale);
-  }
+	/// start listening
+	Future listen({String locale = "en_US"}) {
+		assert(locale != null);
+		assert(_canRecord);
+		_channel.invokeMethod("speech.listen", locale);
+	}
 
-  Future cancel() => _channel.invokeMethod("speech.cancel");
+	Future cancel() => _channel.invokeMethod("speech.cancel");
 
-  Future stop() => _channel.invokeMethod("speech.stop");
+	Future stop() => _channel.invokeMethod("speech.stop");
 
-  Future _platformCallHandler(MethodCall call) async {
-    print("_platformCallHandler call ${call.method} ${call.arguments}");
-    switch (call.method) {
-      case "speech.onSpeechAvailability":
-        availabilityHandler(call.arguments);
-        break;
-      case "speech.onCurrentLocale":
-        currentLocaleHandler(call.arguments);
-        break;
-      case "speech.onSpeech":
-        recognitionResultHandler(call.arguments);
-        break;
-      case "speech.onRecognitionStarted":
-        recognitionStartedHandler();
-        break;
-      case "speech.onRecognitionComplete":
-        recognitionCompleteHandler(call.arguments);
-        break;
-      case "speech.onError":
-        recognitionError();
-        break;
-      default:
-        print('Unknowm method ${call.method} ');
-    }
-  }
+	Future _platformCallHandler(MethodCall call) async {
+		// print("_platformCallHandler call ${call.method} ${call.arguments}");
 
-  // define a method to handle availability / permission result
-  void setAvailabilityHandler(AvailabilityHandler handler) =>
-      availabilityHandler = handler;
+		switch (call.method) {
+			case "speech.onSpeechAvailability":
+				availabilityHandler(call.arguments);
+				break;
 
-  // define a method to handle recognition result
-  void setRecognitionResultHandler(StringResultHandler handler) =>
-      recognitionResultHandler = handler;
+			case "speech.onCurrentLocale":
+				currentLocaleHandler(call.arguments);
+				break;
 
-  // define a method to handle native call
-  void setRecognitionStartedHandler(VoidCallback handler) =>
-      recognitionStartedHandler = handler;
+			case "speech.onSpeech":
+				recognitionResultHandler(call.arguments);
+				break;
 
-  // define a method to handle native call
-  void setRecognitionCompleteHandler(StringResultHandler handler) =>
-      recognitionCompleteHandler = handler;
+			case "speech.onRecognitionStarted":
+				recognitionStartedHandler();
+				break;
 
-  void setCurrentLocaleHandler(StringResultHandler handler) =>
-      currentLocaleHandler = handler;
+			case "speech.onRecognitionComplete":
+				recognitionCompleteHandler(call.arguments);
+				break;
 
-  void setRecognitionError(VoidCallback handler) =>
-      recognitionError = handler;
+			case "speech.onError":
+				recognitionError();
+				break;
+
+			case "speech.onPermissionGranted":
+				_canRecord = await activate();
+				break;
+
+			case "speech.onPermissionDenied":
+				_canRecord = false;
+				break;
+
+			default:
+				print('Unknowm method ${call.method} ');
+		}
+	}
+
+	// define a method to handle availability / permission result
+	void setAvailabilityHandler(AvailabilityHandler handler) =>
+		availabilityHandler = handler;
+
+	// define a method to handle recognition result
+	void setRecognitionResultHandler(StringResultHandler handler) =>
+		recognitionResultHandler = handler;
+
+	// define a method to handle native call
+	void setRecognitionStartedHandler(VoidCallback handler) =>
+		recognitionStartedHandler = handler;
+
+	// define a method to handle native call
+	void setRecognitionCompleteHandler(StringResultHandler handler) =>
+		recognitionCompleteHandler = handler;
+
+	void setCurrentLocaleHandler(StringResultHandler handler) =>
+		currentLocaleHandler = handler;
+
+	void setRecognitionErrorHandler(VoidCallback handler) =>
+		recognitionError = handler;
 }
