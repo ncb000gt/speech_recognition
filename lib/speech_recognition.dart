@@ -74,7 +74,7 @@ class SpeechRecognition {
 				break;
 
 			case "speech.onPermissionGranted":
-				_canRecord = await activate();
+				_canRecord = true;
 				break;
 
 			case "speech.onPermissionDenied":

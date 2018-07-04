@@ -98,6 +98,9 @@ public class SpeechRecognitionPlugin implements MethodCallHandler, RecognitionLi
 
 				Log.d(LOG_TAG, "Application has permissions: " + hasPermissions);
 				result.success(hasPermissions);
+				if (hasPermissions) {
+					speechChannel.invokeMethod("speech.onPermissionGranted", null);
+				}
 
 				Locale locale = activity.getResources().getConfiguration().locale;
 				Log.d(LOG_TAG, "Current Locale: " + locale.toString());
