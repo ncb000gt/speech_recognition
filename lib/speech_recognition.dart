@@ -36,8 +36,9 @@ class SpeechRecognition {
 	/// start listening
 	Future listen({String locale = "en_US"}) {
 		assert(locale != null);
-		assert(_canRecord);
-		_channel.invokeMethod("speech.listen", locale);
+		if (_canRecord) {
+			_channel.invokeMethod("speech.listen", locale);
+		}
 	}
 
 	Future cancel() => _channel.invokeMethod("speech.cancel");
