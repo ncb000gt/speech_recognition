@@ -96,7 +96,7 @@ public class SpeechRecognitionPlugin implements MethodCallHandler, RecognitionLi
 					hasPermissions = hasRecordPerm == PackageManager.PERMISSION_GRANTED;
 				}
 
-				Log.d(LOG_TAG, "ACTIVATE PERMS: " + hasPermissions);
+				Log.d(LOG_TAG, "Application has permissions: " + hasPermissions);
 				result.success(hasPermissions);
 
 				Locale locale = activity.getResources().getConfiguration().locale;
