@@ -1,23 +1,27 @@
 import 'dart:async';
-
 import 'dart:ui';
+
 import 'package:flutter/services.dart';
+import 'package:meta/meta.dart';
 
 typedef void AvailabilityHandler(bool result);
 typedef void StringResultHandler(String text);
 
 /// the channel to control the speech recognition
 class SpeechRecognition {
-	static const MethodChannel _channel = const MethodChannel('speech_recognition');
 	bool _canRecord = false;
+	final MethodChannel _channel;
 
-	static final SpeechRecognition _speech = new SpeechRecognition._internal();
+	factory SpeechRecognition() => _instance;
 
-	factory SpeechRecognition() => _speech;
-
-	SpeechRecognition._internal() {
+	@visibleForTesting
+	SpeechRecognition.private(MethodChannel channel) : _channel = channel {
 		_channel.setMethodCallHandler(_platformCallHandler);
 	}
+
+	static final SpeechRecognition _instance = SpeechRecognition.private(
+		const MethodChannel('speech_recognition')
+	);
 
 	AvailabilityHandler availabilityHandler;
 
